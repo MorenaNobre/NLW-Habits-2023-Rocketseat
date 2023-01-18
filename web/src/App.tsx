@@ -1,5 +1,8 @@
+import { Habit } from "./components/Habit";
+import "./styles/global.css";
+
 function App() {
-  return <h1>Hello there!</h1>;
+  return <Habit />;
 }
 
 export default App;

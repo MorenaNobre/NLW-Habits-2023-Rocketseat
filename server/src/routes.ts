@@ -4,6 +4,7 @@ import z from "zod"
 import { prisma } from "./lib/prisma"
 
 export async function appRoutes(app: FastifyInstance) {
+
   app.post("/habits", async (request) => {
     const createHabitBody = z.object({
       title: z.string(),
@@ -29,5 +30,35 @@ export async function appRoutes(app: FastifyInstance) {
         }
       }
     })
+  })
+
+  app.get("/day", async (request) => {
+    const getDayParams = z.object({
+      date: z.coerce.date(),
+    })
+
+    //localhost:3333/day?date=2023-01-03
+    const {date} = getDayParams.parse(request.query)
+
+    const parsedDate = dayjs(date).startOf("day")
+    const weekDay = parsedDate.get("day")
+
+    //Carregar duas infos: todos os háitos possíveis; hábitos que foram completados
+    const possibleHabits = await prisma.habit.findMany({
+      where: {
+        created_at: {
+          lte: date,
+        },
+        weekDays: {
+          some: {
+            week_day: weekDay,
+          }
+        }
+      }
+    })
+
+    return {
+      possibleHabits,
+    }
   })
 }
